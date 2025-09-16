@@ -1,122 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import Sidebar from './Sidebar';
-import ImageModal from './ImageModal';
-import './GalleryPage.css';
-
-function GalleryPage() {
-  const [galleryItems, setGalleryItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedAlphabet, setSelectedAlphabet] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [categories, setCategories] = useState([]);
-
-  useEffect(() => {
-    const fetchGalleryItems = async () => {
-      try {
-        const response = await axios.get('https://bible-mining-backend-jxj5.onrender.com/api/gallery');
-        setGalleryItems(response.data.galleryItems);
-        setCategories(['All', ...new Set(response.data.categories)]);
-        setLoading(false);
-      } catch (err) {
-        console.error("Error fetching gallery items:", err);
-        setError("గ్యాలరీ ఫోటోలను లోడ్ చేయడంలో లోపం సంభవించింది.");
-        setLoading(false);
-      }
-    };
-    fetchGalleryItems();
-  }, []);
-  
-  const filteredGalleryItems = galleryItems.filter(item =>
-    (selectedCategory === 'All' || item.category === selectedCategory) &&
-    (selectedAlphabet === '' || item.title.toLowerCase().startsWith(selectedAlphabet.toLowerCase())) &&
-    item.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const handleImageClick = (image) => {
-    setSelectedImage(image);
-  };
-  
-  const closeModal = () => {
-    setSelectedImage(null);
-  };
-  
-  const handleResetFilters = () => {
-    setSelectedCategory('All');
-    setSelectedAlphabet('');
-    setSearchTerm('');
-  };
-
-  if (loading) {
-    return <div className="gallery-container">లోడ్ అవుతోంది...</div>;
-  }
-
-  if (error) {
-    return <div className="gallery-container error-message">{error}</div>;
-  }
-
-  return (
-    <div className="main-layout">
-      <Sidebar 
-        onSelectCategory={setSelectedCategory}
-        onSelectAlphabet={setSelectedAlphabet}
-        categories={categories}
-        selectedCategory={selectedCategory}
-        selectedAlphabet={selectedAlphabet}
-      />
-      
-      <div className="songs-content">
-        <h2>గ్యాలరీ</h2>
-        <p className="page-description">
-          ఇక్కడ మీరు ఆకర్షణీయమైన ఫోటోలను చూడవచ్చు.
-        </p>
-        
-        <div className="controls-container">
-          <input
-            type="text"
-            placeholder="ఫోటో కోసం వెతకండి..."
-            className="search-input"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button className="reset-btn" onClick={handleResetFilters}>
-            ఫిల్టర్‌లను రీసెట్ చేయండి
-          </button>
-        </div>
-        
-        <div className="gallery-grid">
-          {filteredGalleryItems.length > 0 ? (
-            filteredGalleryItems.map((item) => (
-              <div key={item._id} className="gallery-card" onClick={() => handleImageClick(item)}>
-                <img src={item.image_url} alt={item.title} className="gallery-image" />
-                <div className="image-info">
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="no-items-found">ఎటువంటి ఫోటోలు దొరకలేదు.</p>
-          )}
-        </div>
-      </div>
-      
-      {selectedImage && <ImageModal image={selectedImage} onClose={closeModal} />}
-    </div>
-  );
-}
-
-export default GalleryPage;
-
 // import React, { useState, useEffect } from 'react';
 // import axios from 'axios';
 // import Sidebar from './Sidebar';
 // import ImageModal from './ImageModal';
 // import './GalleryPage.css';
-// import { API_BASE, withBase } from './api';
 
 // function GalleryPage() {
 //   const [galleryItems, setGalleryItems] = useState([]);
@@ -131,7 +17,7 @@ export default GalleryPage;
 //   useEffect(() => {
 //     const fetchGalleryItems = async () => {
 //       try {
-//         const response = await axios.get(`\${API_BASE}/api/gallery`);
+//         const response = await axios.get('https://bible-mining-backend-jxj5.onrender.com/api/gallery');
 //         setGalleryItems(response.data.galleryItems);
 //         setCategories(['All', ...new Set(response.data.categories)]);
 //         setLoading(false);
@@ -205,7 +91,7 @@ export default GalleryPage;
 //           {filteredGalleryItems.length > 0 ? (
 //             filteredGalleryItems.map((item) => (
 //               <div key={item._id} className="gallery-card" onClick={() => handleImageClick(item)}>
-//                 <img src={withBase(item.image_url)} alt={item.title} className="gallery-image" />
+//                 <img src={item.image_url} alt={item.title} className="gallery-image" />
 //                 <div className="image-info">
 //                   <h3>{item.title}</h3>
 //                   <p>{item.description}</p>
@@ -225,122 +111,154 @@ export default GalleryPage;
 
 // export default GalleryPage;
 
-// === PATCH: Gallery page wired to Render API, empty-safe, withBase for images ===
-// import React, { useState, useEffect } from "react";
-// import { API_BASE, withBase } from "./api";
-// import Sidebar from "./Sidebar";
-// import ImageModal from "./ImageModal";
-// import "./GalleryPage.css";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import Sidebar from './Sidebar';
+import ImageModal from './ImageModal';
+import './GalleryPage.css';
 
-// export default function GalleryPage() {
-//   const [galleryItems, setGalleryItems] = useState([]);
-//   const [categories, setCategories] = useState([]);
-//   const [selectedCategory, setSelectedCategory] = useState("All");
-//   const [selectedAlphabet, setSelectedAlphabet] = useState("");
-//   const [searchTerm, setSearchTerm] = useState("");
-//   const [selectedImage, setSelectedImage] = useState(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState("");
+/* ================= [PATCH] API base ================= */
+const API_BASE =
+  process.env.REACT_APP_API_BASE ||
+  'https://bible-mining-backend-jxj5.onrender.com';
+/* ==================================================== */
 
-//   useEffect(() => {
-//     (async () => {
-//       try {
-//         const res = await fetch(`${API_BASE}/api/gallery`);
-//         if (!res.ok) throw new Error(`GET /api/gallery → ${res.status}`);
-//         const data = await res.json(); // expect array
-//         const list = Array.isArray(data) ? data : [];
-//         setGalleryItems(list);
-//         setCategories(
-//           Array.from(new Set(list.map((i) => i.category).filter(Boolean)))
-//         );
-//       } catch (e) {
-//         setError(e.message || "Failed to load gallery");
-//       } finally {
-//         setLoading(false);
-//       }
-//     })();
-//   }, []);
+function GalleryPage() {
+  const [galleryItems, setGalleryItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedAlphabet, setSelectedAlphabet] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [categories, setCategories] = useState(['All']); // [PATCH] default "All"
 
-//   const filtered = galleryItems.filter((item) => {
-//     const byCat = selectedCategory === "All" || item.category === selectedCategory;
-//     const byAlpha =
-//       !selectedAlphabet ||
-//       (item.title || "").toLowerCase().startsWith(selectedAlphabet.toLowerCase());
-//     const bySearch = (item.title || "").toLowerCase().includes(searchTerm.toLowerCase());
-//     return byCat && byAlpha && bySearch;
-//   });
+  useEffect(() => {
+    const fetchGalleryItems = async () => {
+      try {
+        setError(null);
+        setLoading(true);
 
-//   if (loading) return <div className="gallery-container">లోడ్ అవుతోంది…</div>;
-//   if (error)
-//     return (
-//       <div className="gallery-container error-message">
-//         గ్యాలరీ ఫోటోలను లోడ్ చేయడంలో లోపం సంభవించింది: {error}
-//       </div>
-//     );
+        /* ============== [PATCH] shape-agnostic parsing ============== */
+        const response = await axios.get(`${API_BASE}/api/gallery`);
+        const raw = response.data;
 
-//   return (
-//     <div className="gallery-container">
-//       <Sidebar />
-//       <div className="gallery-content">
-//         <h2>గ్యాలరీ</h2>
+        // backend నుంచి రావొచ్చు: [] లేదా { items: [...] } లేదా { gallery: [...] } లేదా { galleryItems: [...] }
+        const list = Array.isArray(raw)
+          ? raw
+          : (raw?.items || raw?.gallery || raw?.galleryItems || []);
 
-//         <div className="filter-bar">
-//           <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-//             <option value="All">అన్ని కేటగిరీలు</option>
-//             {categories.map((c) => (
-//               <option key={c} value={c}>{c}</option>
-//             ))}
-//           </select>
+        // null-safe, field పేర్లు normalize
+        const normalized = list
+          .map((it, idx) => ({
+            _id: it?._id || it?.id || `item-${idx}`,
+            title: it?.title || '',
+            description: it?.description || it?.caption || '',
+            category: it?.category || 'General',
+            image_url: it?.image_url || it?.url || it?.src || '', // ముఖ్యంగా Cloudinary URL
+            order: Number(it?.order ?? 0),
+          }))
+          .filter(it => !!it.image_url); // URL లేని వాటిని తొలగించు
 
-//           <input
-//             placeholder="A-Z filter"
-//             value={selectedAlphabet}
-//             onChange={(e) => setSelectedAlphabet(e.target.value)}
-//           />
-//           <input
-//             placeholder="Search title"
-//             value={searchTerm}
-//             onChange={(e) => setSearchTerm(e.target.value)}
-//           />
+        // చిన్నగా సార్టింగ్: order → title
+        normalized.sort((a, b) => (a.order - b.order) || a.title.localeCompare(b.title));
+        setGalleryItems(normalized);
 
-//           <button
-//             onClick={() => {
-//               setSelectedCategory("All");
-//               setSelectedAlphabet("");
-//               setSearchTerm("");
-//             }}
-//           >
-//             Reset
-//           </button>
-//         </div>
+        // categories: backend ఇచ్చినా/ ఇవ్వకపోయినా handle చెయ్యి
+        const providedCats = Array.isArray(raw?.categories) ? raw.categories : [];
+        const autoCats = Array.from(new Set(normalized.map(i => i.category))).filter(Boolean);
+        const finalCats = ['All', ...new Set([...providedCats, ...autoCats])];
+        setCategories(finalCats);
+        /* ============================================================ */
 
-//         <div className="gallery-grid">
-//           {filtered.length ? (
-//             filtered.map((item) => (
-//               <div key={item._id || item.title} className="gallery-card" onClick={() => setSelectedImage(item.image_url)}>
-//                 {item.image_url ? (
-//                   <img
-//                     src={withBase(item.image_url)}
-//                     alt={item.title}
-//                     className="gallery-image"
-//                     onError={(e) => (e.currentTarget.style.display = "none")}
-//                   />
-//                 ) : null}
-//                 <div className="gallery-info">
-//                   <h3>{item.title}</h3>
-//                   <p>{item.description}</p>
-//                 </div>
-//               </div>
-//             ))
-//           ) : (
-//             <div>ఇప్పటివరకు ఫోటోలు లేవు.</div>
-//           )}
-//         </div>
+      } catch (err) {
+        console.error('Error fetching gallery items:', err);
+        setError('గ్యాలరీ ఫోటోలను లోడ్ చేయడంలో లోపం సంభవించింది.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchGalleryItems();
+  }, []);
 
-//         {selectedImage && (
-//           <ImageModal image={withBase(selectedImage)} onClose={() => setSelectedImage(null)} />
-//         )}
-//       </div>
-//     </div>
-//   );
-// }
+  /* ============== ఫిల్టర్ logic (null-safe) ============== */
+  const filteredGalleryItems = galleryItems.filter(item => {
+    const okCat = selectedCategory === 'All' || item.category === selectedCategory;
+    const okAlpha = selectedAlphabet === '' || (item.title || '').toLowerCase().startsWith(selectedAlphabet.toLowerCase());
+    const okSearch = (item.title || '').toLowerCase().includes(searchTerm.toLowerCase());
+    return okCat && okAlpha && okSearch;
+  });
+
+  const handleImageClick = (image) => setSelectedImage(image);
+  const closeModal = () => setSelectedImage(null);
+
+  const handleResetFilters = () => {
+    setSelectedCategory('All');
+    setSelectedAlphabet('');
+    setSearchTerm('');
+  };
+
+  if (loading) return <div className="gallery-container">లోడ్ అవుతోంది...</div>;
+  if (error)   return <div className="gallery-container error-message">{error}</div>;
+
+  return (
+    <div className="main-layout">
+      <Sidebar
+        onSelectCategory={setSelectedCategory}
+        onSelectAlphabet={setSelectedAlphabet}
+        categories={categories}
+        selectedCategory={selectedCategory}
+        selectedAlphabet={selectedAlphabet}
+      />
+
+      <div className="songs-content">
+        <h2>గ్యాలరీ</h2>
+        <p className="page-description">
+          ఇక్కడ మీరు ఆకర్షణీయమైన ఫోటోలను చూడవచ్చు.
+        </p>
+
+        <div className="controls-container">
+          <input
+            type="text"
+            placeholder="ఫోటో కోసం వెతకండి..."
+            className="search-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button className="reset-btn" onClick={handleResetFilters}>
+            ఫిల్టర్‌లను రీసెట్ చేయండి
+          </button>
+        </div>
+
+        <div className="gallery-grid">
+          {filteredGalleryItems.length > 0 ? (
+            filteredGalleryItems.map((item) => (
+              <div
+                key={item._id}
+                className="gallery-card"
+                onClick={() => handleImageClick(item)}
+              >
+                <img
+                  src={item.image_url}
+                  alt={item.title || 'photo'}
+                  className="gallery-image"
+                  loading="lazy" /* [PATCH] perf */
+                />
+                <div className="image-info">
+                  <h3>{item.title || 'Untitled'}</h3>
+                  {item.description && <p>{item.description}</p>}
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="no-items-found">ఎటువంటి ఫోటోలు దొరకలేదు.</p>
+          )}
+        </div>
+      </div>
+
+      {selectedImage && <ImageModal image={selectedImage} onClose={closeModal} />}
+    </div>
+  );
+}
+
+export default GalleryPage;
