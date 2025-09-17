@@ -67,3 +67,4 @@ function PDFViewer({ file }) {
 }
 
 export default PDFViewer;
+
